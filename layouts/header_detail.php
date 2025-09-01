@@ -58,7 +58,7 @@
                                             <img src="assets/images/users/avatar_default.jpg" alt="user-image" class="rounded-circle">
                                         </span>
                                         <span>
-                                            <span class="account-user-name">Wibowo</span>
+                                            <span class="account-user-name">Djody</span>
                                             <span class="account-position">Founder</span>
                                         </span>
                                     </a>
