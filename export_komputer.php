@@ -1,48 +1,70 @@
 <?php
 require 'functions/function_komputer.php';
-require 'vendor/autoload.php'; // pastikan ini benar sesuai lokasi autoload.php
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+// Ambil semua data asli
+$all = getData();
 
-$data = getData(); // ambil semua data komputer
+// Ambil parameter filter dari URL
+$kategori = $_GET['kategori'] ?? '';
+$dept     = $_GET['dept'] ?? '';
+$tgl_awal = $_GET['tgl_awal'] ?? '';
+$tgl_akhir = $_GET['tgl_akhir'] ?? '';
 
-$spreadsheet = new Spreadsheet();
-$sheet = $spreadsheet->getActiveSheet();
-
-// Header kolom
-$sheet->setCellValue('A1', 'Kode Assets');
-$sheet->setCellValue('B1', 'Nama Assets');
-$sheet->setCellValue('C1', 'Tanggal Pembelian');
-$sheet->setCellValue('D1', 'User');
-$sheet->setCellValue('E1', 'IP');
-$sheet->setCellValue('F1', 'Spec');
-$sheet->setCellValue('G1', 'Lokasi');
-$sheet->setCellValue('H1', 'Qty');
-$sheet->setCellValue('I1', 'Desc');
-$sheet->setCellValue('J1', 'Keterangan');
-
-// Isi data mulai dari baris ke-2
-$row = 2;
-foreach ($data as $d) {
-    $sheet->setCellValue("A$row", $d['kode_assets_kom']);
-    $sheet->setCellValue("B$row", $d['nama_assets_kom']);
-    $sheet->setCellValue("C$row", $d['tgl_pembelian_kom']);
-    $sheet->setCellValue("D$row", $d['user_kom']);
-    $sheet->setCellValue("E$row", $d['ip_kom']);
-    $sheet->setCellValue("F$row", $d['spec_kom']);
-    $sheet->setCellValue("G$row", $d['lokasi_kom']);
-    $sheet->setCellValue("H$row", $d['qty_kom']);
-    $sheet->setCellValue("I$row", $d['desc_kom']);
-    $sheet->setCellValue("J$row", $d['keterangan_kom']);
-    $row++;
+// Jalankan logika filter yang sama dengan report_komputer.php
+if ($kategori !== '' || $dept !== '' || ($tgl_awal !== '' && $tgl_akhir !== '')) {
+    $all = array_filter($all, function($i) use ($kategori, $dept, $tgl_awal, $tgl_akhir) {
+        $check = true;
+        if ($kategori !== '' && $i['kategori_kom'] !== $kategori) $check = false;
+        if ($dept !== '' && $i['dept_kom'] !== $dept) $check = false;
+        if ($tgl_awal !== '' && $tgl_akhir !== '') {
+            $tgl_beli = $i['tgl_pembelian_kom'];
+            if ($tgl_beli < $tgl_awal || $tgl_beli > $tgl_akhir) $check = false;
+        }
+        return $check;
+    });
 }
 
-// Set header untuk download
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="data_komputer.xlsx"');
-header('Cache-Control: max-age=0');
+// Set Header untuk Download Excel
+$filename = "Report_Komputer_" . date('Ymd_His') . ".xls";
+header("Content-Type: application/vnd.ms-excel");
+header("Content-Disposition: attachment; filename=\"$filename\"");
+?>
 
-$writer = new Xlsx($spreadsheet);
-$writer->save('php://output');
-exit;
+<table border="1">
+    <thead>
+        <tr>
+            <th colspan="10" style="font-size: 16px; font-weight: bold;">LAPORAN DATA INVENTARIS KOMPUTER</th>
+        </tr>
+        <tr>
+            <th colspan="10">PT. METRO PEARL INDONESIA</th>
+        </tr>
+        <tr>
+            <th>No</th>
+            <th>Kode Asset</th>
+            <th>Nama Asset</th>
+            <th>Dept</th>
+            <th>User</th>
+            <th>Tgl Pembelian</th>
+            <th>Spesifikasi</th>
+            <th>IP Address</th>
+            <th>Lokasi</th>
+            <th>Qty</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $no = 1; foreach ($all as $d): ?>
+            <tr>
+                <td><?= $no++ ?></td>
+                <td><?= $d['kode_assets_kom'] ?></td>
+                <td><?= $d['nama_assets_kom'] ?></td>
+                <td><?= $d['dept_kom'] ?></td>
+                <td><?= $d['user_kom'] ?></td>
+                <td><?= $d['tgl_pembelian_kom'] ?></td>
+                <td><?= $d['spec_kom'] ?></td>
+                <td><?= $d['ip_kom'] ?></td>
+                <td><?= $d['lokasi_kom'] ?></td>
+                <td><?= $d['qty_kom'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>

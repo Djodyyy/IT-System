@@ -10,7 +10,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="text-md-end footer-links d-none d-md-block">
-                                    <i style="font-size: 12px;">Support By KENWO</i>
+                                    <i style="font-size: 12px;">Support By IT MPI</i>
                                 </div>
                             </div>
                         </div>

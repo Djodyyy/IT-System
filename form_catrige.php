@@ -31,7 +31,7 @@
                                                         <label for="task-priority2" class="form-label">Type Catrige</label>
                                                         <select name="id_catrige" class="form-select mb-3">
                                                         <?php $all = getCatrige(); foreach ($all as $data) { ?>
-                                                            <option value="<?= $data['id_catrige'] ?>"><?= $data['nama_catrige'] ?> ( <?= $data['jml_catrige'] ?> )</option>
+                                                            <option value="<?= $data['id_catrige'] ?>"><?= $data['type_catrige'] ?> ( <?= $data['jml_catrige'] ?> )</option>
                                                         <?php } ?>
                                                         </select>
                                                     </div>
@@ -98,7 +98,7 @@
                                                             <?php foreach ($all as $data) { ?>
                                                             <tr>
                                                                 <td><?= $no++ ?></td>
-                                                                <td><?= $data['nama_catrige'] ?></td>
+                                                                <td><?= $data['type_catrige'] ?></td>
                                                                 <td><?= $data['depart'] ?></td>
                                                                 <td><?= $data['tanggal_form'] ?></td>
                                                                 <td><?= $data['qty_pengambilan'] ?></td>

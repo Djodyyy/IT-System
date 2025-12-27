@@ -1,4 +1,4 @@
-<?php 
+<?php
 include_once 'layouts/header_detail.php';
 require 'functions/function_komputer.php';
 
@@ -20,7 +20,9 @@ if (!$data) {
     <div class="row">
         <div class="col-1">
             <div class="page-title-box">
-                <a href="data_komputer.php"><h4 class="page-title"><i class="uil-arrow-circle-left text-info"></i> Back</h4></a>
+                <a href="data_komputer.php">
+                    <h4 class="page-title"><i class="uil-arrow-circle-left text-info"></i> Back</h4>
+                </a>
             </div>
         </div>
         <div class="col-11">
@@ -35,7 +37,7 @@ if (!$data) {
                 </div>
             </div>
         </div>
-    </div>     
+    </div>
 
     <div class="row">
         <!-- DETAIL KOMPUTER -->
@@ -47,25 +49,25 @@ if (!$data) {
                     <table class="table table-borderless">
                         <tbody>
                             <?php
-                                $fields = [
-                                    'Kode Assets' => 'kode_assets_kom',
-                                    'Nama Assets' => 'nama_assets_kom',
-                                    'Tanggal Pembelian' => 'tgl_pembelian_kom',
-                                    'User' => 'user_kom',
-                                    'IP' => 'ip_kom',
-                                    'Spec' => 'spec_kom',
-                                    'Lokasi' => 'lokasi_kom',
-                                    'Qty' => 'qty_kom',
-                                    'Desc' => 'desc_kom',
-                                    'Keterangan' => 'keterangan_kom'
-                                ];
-                                foreach ($fields as $label => $key):
+                            $fields = [
+                                'Kode Assets' => 'kode_assets_kom',
+                                'Nama Assets' => 'nama_assets_kom',
+                                'Tanggal Pembelian' => 'tgl_pembelian_kom',
+                                'User' => 'user_kom',
+                                'IP' => 'ip_kom',
+                                'Spec' => 'spec_kom',
+                                'Lokasi' => 'lokasi_kom',
+                                'Qty' => 'qty_kom',
+                                'Desc' => 'desc_kom',
+                                'Keterangan' => 'keterangan_kom'
+                            ];
+                            foreach ($fields as $label => $key):
                             ?>
-                            <tr>
-                                <th><strong><?= htmlspecialchars($label) ?></strong></th>
-                                <td>:</td>
-                                <td><?= isset($data[$key]) ? htmlspecialchars($data[$key]) : '-' ?></td>
-                            </tr>
+                                <tr>
+                                    <th><strong><?= htmlspecialchars($label) ?></strong></th>
+                                    <td>:</td>
+                                    <td><?= isset($data[$key]) ? htmlspecialchars($data[$key]) : '-' ?></td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -81,12 +83,10 @@ if (!$data) {
                     <hr>
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <button class="btn btn-sm btn-success mb-2" data-bs-toggle="modal" data-bs-target="#add-perbaikan">
-                                <i class="mdi mdi-plus-circle-outline"></i> Create New
-                            </button>
+
                         </div>
                         <div class="col-sm-6 text-end">
-                            <a href="#" class="btn btn-sm btn-dark mb-2">Export</a>
+                            <a href="export_perbaikan_komputer.php" class="btn btn-sm btn-dark mb-2">Export</a>
                         </div>
                     </div>
 
@@ -102,20 +102,20 @@ if (!$data) {
                         <tbody>
                             <?php $riwayat = getPerbaikan($kode_assets_kom); ?>
                             <?php foreach ($riwayat as $data_perbaikan): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($data_perbaikan['deskripsi_perbaikan']) ?></td>
-                                <td><?= htmlspecialchars($data_perbaikan['tanggal_perbaikan']) ?></td>
-                                <td>
-                                    <span class="badge <?= $data_perbaikan['status_perbaikan'] === 'perbaikan' ? 'bg-warning' : 'bg-danger' ?>">
-                                        <?= htmlspecialchars($data_perbaikan['status_perbaikan']) ?>
-                                    </span>
-                                </td>
-                                <td class="table-action">
-                                    <a href="functions/function_komputer.php?hapus1=<?= urlencode($data_perbaikan['id_perbaikan_kom']) ?>&kode_assets_kom=<?= urlencode($kode_assets_kom) ?>" class="action-icon" onclick="return confirm('Yakin hapus?');">
-                                        <i class="mdi mdi-delete text-danger"></i>
-                                    </a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><?= htmlspecialchars($data_perbaikan['deskripsi_perbaikan']) ?></td>
+                                    <td><?= date('d/m/Y', strtotime($data_perbaikan['tanggal_perbaikan'])) ?></td>
+                                    <td>
+                                        <span class="badge <?= $data_perbaikan['status_perbaikan'] === 'perbaikan' ? 'bg-warning' : 'bg-danger' ?>">
+                                            <?= htmlspecialchars($data_perbaikan['status_perbaikan']) ?>
+                                        </span>
+                                    </td>
+                                    <td class="table-action">
+                                        <a href="functions/function_komputer.php?hapus1=<?= urlencode($data_perbaikan['id_perbaikan_kom']) ?>&kode_assets_kom=<?= urlencode($kode_assets_kom) ?>" class="action-icon" onclick="return confirm('Yakin hapus?');">
+                                            <i class="mdi mdi-delete text-danger"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>

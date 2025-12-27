@@ -1,239 +1,175 @@
 <?php
-
 require_once 'koneksi.php';
 include_once 'helper.php';
 
-function getData()
+
+function normalizeDate($date)
 {
-	global $conn;
-	$sql 	= "SELECT * FROM tb_komputer";
-	$result	= mysqli_query($conn, $sql);
-	return mysqli_fetch_all($result, MYSQLI_ASSOC);
-	mysqli_free_result($result);
-	mysqli_close($conn);
+    return (!empty($date)) ? $date : NULL;
 }
 
-function getPerbaikan()
+
+function generateKodeAsset($kategori, $dept)
 {
-	$kode = $_GET['kode_assets_kom'];
-	global $conn;
-	$sql 	= "SELECT a.id_perbaikan_kom, a.deskripsi_perbaikan, a.tanggal_perbaikan, a.status_perbaikan FROM tb_perbaikan a
-					LEFT JOIN tb_komputer b ON a.kode_assets_kom = b.kode_assets_kom
-					WHERE a.kode_assets_kom ='$kode'";
-	$result	= mysqli_query($conn, $sql);
-	return mysqli_fetch_all($result, MYSQLI_ASSOC);
-	mysqli_free_result($result);
-	mysqli_close($conn);
+    global $conn;
+
+    $sql = "SELECT kode_assets_kom 
+            FROM tb_komputer
+            WHERE kategori_kom = ?
+            AND dept_kom = ?
+            ORDER BY kode_assets_kom DESC
+            LIMIT 1";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'ss', $kategori, $dept);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $last = mysqli_fetch_assoc($result);
+
+    $newNumber = $last ? ((int) substr($last['kode_assets_kom'], -3)) + 1 : 1;
+    $urut = str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+
+    return "$kategori-$dept-$urut";
+}
+
+function getData()
+{
+    global $conn;
+    $sql = "SELECT * FROM tb_komputer ORDER BY kode_assets_kom ASC";
+    $query = mysqli_query($conn, $sql);
+    return mysqli_fetch_all($query, MYSQLI_ASSOC);
 }
 
 function getDetailKomputer($kode_assets_kom)
 {
-	global $conn;
-	$sql = "SELECT * FROM tb_komputer WHERE kode_assets_kom = '$kode_assets_kom'";
-	$result = mysqli_query($conn, $sql);
-	return mysqli_fetch_assoc($result); // pakai fetch_assoc karena 1 baris saja
+    global $conn;
+    $sql = "SELECT * FROM tb_komputer WHERE kode_assets_kom = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $kode_assets_kom);
+    mysqli_stmt_execute($stmt);
+    return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 }
 
-function addData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom)
+
+function getPerbaikan($kode_assets_kom)
 {
-	global $conn;
+    global $conn;
+    $sql = "SELECT * FROM tb_perbaikan 
+            WHERE kode_assets_kom = ?
+            ORDER BY tanggal_perbaikan DESC";
 
-	// Handle NULL values: ganti NULL jadi string kosong atau 0
-	$kode_assets_kom   = $kode_assets_kom ?? '';
-	$nama_assets_kom   = $nama_assets_kom ?? '';
-	$tgl_pembelian_kom = $tgl_pembelian_kom ?? '';
-	$user_kom          = $user_kom ?? '';
-	$ip_kom            = $ip_kom ?? '';
-	$spec_kom          = $spec_kom ?? '';
-	$lokasi_kom        = $lokasi_kom ?? '';
-	$qty_kom           = is_numeric($qty_kom) ? $qty_kom : 0;
-	$desc_kom          = $desc_kom ?? '';
-	$keterangan_kom    = $keterangan_kom ?? '';
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $kode_assets_kom);
+    mysqli_stmt_execute($stmt);
 
-	// Gunakan prepared statement
-	$sql = "INSERT INTO tb_komputer (kode_assets_kom, nama_assets_kom, tgl_pembelian_kom, user_kom, ip_kom, spec_kom, lokasi_kom, qty_kom, desc_kom, keterangan_kom) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-	$stmt = mysqli_prepare($conn, $sql);
-	mysqli_stmt_bind_param(
-		$stmt,
-		'sssssssiss',
-		$kode_assets_kom,
-		$nama_assets_kom,
-		$tgl_pembelian_kom,
-		$user_kom,
-		$ip_kom,
-		$spec_kom,
-		$lokasi_kom,
-		$qty_kom,
-		$desc_kom,
-		$keterangan_kom
-	);
-
-	$result = mysqli_stmt_execute($stmt);
-	mysqli_stmt_close($stmt);
-
-	return $result;
+    return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
 }
 
-
-function addPerbaikan($deskripsi_perbaikan, $tanggal_perbaikan, $status_perbaikan, $kode_assets_kom)
+function addPerbaikan($kode_assets_kom, $deskripsi, $tanggal, $status)
 {
-	global $conn;
-	$sql 	= "INSERT INTO tb_perbaikan (deskripsi_perbaikan, tanggal_perbaikan, status_perbaikan, kode_assets_kom) VALUES ('$deskripsi_perbaikan','$tanggal_perbaikan','$status_perbaikan','$kode_assets_kom')";
-	$result	= mysqli_query($conn, $sql);
-	return ($result) ? true : false;
-	mysqli_close($conn);
+    global $conn;
+    $sql = "INSERT INTO tb_perbaikan
+            (kode_assets_kom, deskripsi_perbaikan, tanggal_perbaikan, status_perbaikan)
+            VALUES (?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'ssss',
+        $kode_assets_kom,
+        $deskripsi,
+        $tanggal,
+        $status
+    );
+
+    return mysqli_stmt_execute($stmt);
 }
 
-function editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom)
+function deletePerbaikan($id)
 {
-	global $conn;
-	$fixid 	= mysqli_real_escape_string($conn, $kode_assets_kom);
-	$sql 	= "UPDATE tb_komputer SET kode_assets_kom='$kode_assets_kom', nama_assets_kom='$nama_assets_kom', tgl_pembelian_kom='$tgl_pembelian_kom', user_kom='$user_kom', ip_kom='$ip_kom', spec_kom='$spec_kom', lokasi_kom='$lokasi_kom', qty_kom='$qty_kom', desc_kom='$desc_kom', keterangan_kom='$keterangan_kom' WHERE kode_assets_kom='$fixid'";
-	$result	= mysqli_query($conn, $sql);
-	return ($result) ? true : false;
-	mysqli_close($conn);
+    global $conn;
+    $sql = "DELETE FROM tb_perbaikan WHERE id_perbaikan_kom = ?"; 
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    return mysqli_stmt_execute($stmt);
 }
 
-// function editPerbaikan($id_perbaikan_kom, $deskripsi_perbaikan, $tanggal_perbaikan, $status_perbaikan) {
-// 	global $conn;
-// 	$fixid 	= mysqli_real_escape_string($conn, $id_perbaikan_kom);
-// 	$sql 	= "UPDATE tb_perbaikan SET deskripsi_perbaikan='$deskripsi_perbaikan', tanggal_perbaikan='$tanggal_perbaikan', status_perbaikan='$status_perbaikan' WHERE id_perbaikan_kom='$fixid'";
-// 	$result	= mysqli_query($conn, $sql);
-// 	return ($result) ? true : false;
-// 	mysqli_close($conn);
-// }
+
+function addData($kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom) {
+    global $conn;
+    $kode_assets_kom = generateKodeAsset($kategori_kom, $dept_kom);
+    $sql = "INSERT INTO tb_komputer 
+        (kode_assets_kom, kategori_kom, dept_kom, nama_assets_kom, tgl_pembelian_kom,
+         user_kom, ip_kom, spec_kom, lokasi_kom, qty_kom, desc_kom, keterangan_kom)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt,'ssssssssisss',
+        $kode_assets_kom, $kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom,
+        $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom
+    );
+    return mysqli_stmt_execute($stmt);
+}
+
+function editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom) {
+    global $conn;
+    $sql = "UPDATE tb_komputer SET
+        nama_assets_kom = ?, tgl_pembelian_kom = ?, user_kom = ?, ip_kom = ?, spec_kom = ?,
+        lokasi_kom = ?, qty_kom = ?, desc_kom = ?, keterangan_kom = ?
+        WHERE kode_assets_kom = ?";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt,'ssssssisss',
+        $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom,
+        $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom, $kode_assets_kom
+    );
+    return mysqli_stmt_execute($stmt);
+}
 
 function deleteData($kode_assets_kom)
 {
-	global $conn;
-	$sql 	= "DELETE FROM tb_komputer WHERE kode_assets_kom='$kode_assets_kom'";
-	$result	= mysqli_query($conn, $sql);
-	return ($result) ? true : false;
-	mysqli_close($conn);
+    global $conn;
+    $sql = "DELETE FROM tb_komputer WHERE kode_assets_kom = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $kode_assets_kom);
+    return mysqli_stmt_execute($stmt);
 }
 
-function deletePerbaikan($id_perbaikan_kom)
-{
-	global $conn;
-	$sql 	= "DELETE FROM tb_perbaikan WHERE id_perbaikan_kom='$id_perbaikan_kom'";
-	$result	= mysqli_query($conn, $sql);
-	return ($result) ? true : false;
-	mysqli_close($conn);
-}
 
-if (isset($_POST['add'])) {
-	$kode_assets_kom	= mysqli_real_escape_string($conn, $_POST['kode_assets_kom']);
-	$nama_assets_kom	= mysqli_real_escape_string($conn, $_POST['nama_assets_kom']);
-	$tgl_pembelian_kom	= mysqli_real_escape_string($conn, $_POST['tgl_pembelian_kom']);
-	$user_kom	        = mysqli_real_escape_string($conn, $_POST['user_kom']);
-	$ip_kom	            = mysqli_real_escape_string($conn, $_POST['ip_kom']);
-	$spec_kom	        = mysqli_real_escape_string($conn, $_POST['spec_kom']);
-	$lokasi_kom	        = mysqli_real_escape_string($conn, $_POST['lokasi_kom']);
-	$qty_kom	        = mysqli_real_escape_string($conn, $_POST['qty_kom']);
-	$desc_kom           = mysqli_real_escape_string($conn, $_POST['desc_kom']);
-	$keterangan_kom     = mysqli_real_escape_string($conn, $_POST['keterangan_kom']);
-	$add 	            = addData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom);
-	session_start();
-	unset($_SESSION["message"]);
-	if ($add) {
-		$_SESSION['message'] = $added;
-	} else {
-		$_SESSION['message'] = $added_failed;
-	}
-	header("location:../data_komputer.php");
-} elseif (isset($_POST['add1'])) {
-	$deskripsi_perbaikan	= mysqli_real_escape_string($conn, $_POST['deskripsi_perbaikan']);
-	$tanggal_perbaikan		= mysqli_real_escape_string($conn, $_POST['tanggal_perbaikan']);
-	$status_perbaikan		= mysqli_real_escape_string($conn, $_POST['status_perbaikan']);
-	$kode_assets_kom		= mysqli_real_escape_string($conn, $_POST['kode_assets_kom']);
-	$add1 	            	= addPerbaikan($deskripsi_perbaikan, $tanggal_perbaikan, $status_perbaikan, $kode_assets_kom);
-	session_start();
-	unset($_SESSION["message"]);
-	if ($add1) {
-		$_SESSION['message'] = $added;
-	} else {
-		$_SESSION['message'] = $added_failed;
-	}
-	header("location:../detail_komputer.php?kode_assets_kom=" . $kode_assets_kom);
-} elseif (isset($_POST['edit'])) {
-	$kode_assets_kom	= mysqli_real_escape_string($conn, $_POST['kode_assets_kom']);
-	$nama_assets_kom	= mysqli_real_escape_string($conn, $_POST['nama_assets_kom']);
-	$tgl_pembelian_kom	= mysqli_real_escape_string($conn, $_POST['tgl_pembelian_kom']);
-	$user_kom	        = mysqli_real_escape_string($conn, $_POST['user_kom']);
-	$ip_kom	            = mysqli_real_escape_string($conn, $_POST['ip_kom']);
-	$spec_kom	        = mysqli_real_escape_string($conn, $_POST['spec_kom']);
-	$lokasi_kom	        = mysqli_real_escape_string($conn, $_POST['lokasi_kom']);
-	$qty_kom	        = mysqli_real_escape_string($conn, $_POST['qty_kom']);
-	$desc_kom           = mysqli_real_escape_string($conn, $_POST['desc_kom']);
-	$keterangan_kom     = mysqli_real_escape_string($conn, $_POST['keterangan_kom']);
-	$edit 		        = editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom);
-	session_start();
-	unset($_SESSION["message"]);
-	if ($edit) {
-		$_SESSION['message'] = $edited;
-	} else {
-		$_SESSION['message'] = $failed;
-	}
-	header("location:../data_komputer.php");
-
-	// }elseif (isset($_POST['edit1'])) {
-	// 	$id_perbaikan_kom		= mysqli_real_escape_string($conn, $_POST['id_perbaikan_kom']);
-	// 	$deskripsi_perbaikan	= mysqli_real_escape_string($conn, $_POST['deskripsi_perbaikan']);
-	// 	$tanggal_perbaikan		= mysqli_real_escape_string($conn, $_POST['tanggal_perbaikan']);
-	// 	$status_perbaikan		= mysqli_real_escape_string($conn, $_POST['status_perbaikan']);
-	// 	$edit1 		        	= editPerbaikan($id_perbaikan_kom, $deskripsi_perbaikan, $tanggal_perbaikan, $status_perbaikan);
-	// 	session_start();
-	// 	unset ($_SESSION["message"]);
-	// 	if ($edit) {			
-	// 		$_SESSION['message'] = $edited;
-	// 	}else {
-	// 		$_SESSION['message'] = $failed;
-	// 	}
-	// 	header("location:../data_komputer.php");
-
-} elseif (isset($_GET['hapus'])) {
-	$kode_assets_kom    = mysqli_real_escape_string($conn, $_GET['hapus']);
-	$delete = deleteData($kode_assets_kom);
-	session_start();
-	unset($_SESSION["message"]);
-	if ($delete) {
-		$_SESSION['message'] = $deleted;
-	} else {
-		$_SESSION['message'] = $failed;
-	}
-	header("location:../data_komputer.php");
-} elseif (isset($_GET['hapus1'])) {
-	$kode_assets_kom = $_GET['kode_assets_kom'];
-	$id_perbaikan_kom    = mysqli_real_escape_string($conn, $_GET['hapus1']);
-	$delete = deletePerbaikan($id_perbaikan_kom);
-	session_start();
-	unset($_SESSION["message"]);
-	if ($delete) {
-		$_SESSION['message'] = $deleted;
-	} else {
-		$_SESSION['message'] = $failed;
-	}
-	header("location:../detail_komputer.php?kode_assets_kom=" . $kode_assets_kom);
-}
 function getTotalKomputer() {
     global $conn;
-    $result = mysqli_query($conn, "SELECT SUM(qty_kom) as total FROM tb_komputer");
-    $row = mysqli_fetch_assoc($result);
-    return $row['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_komputer");
+    $data = mysqli_fetch_assoc($res);
+    return $data ? $data['total'] : 0;
 }
 
 function getTotalPerbaikan() {
     global $conn;
-    $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_perbaikan WHERE status_perbaikan = 'perbaikan'");
-    $row = mysqli_fetch_assoc($result);
-    return $row['total'] ?? 0;
+    $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_perbaikan");
+    $data = mysqli_fetch_assoc($res);
+    return $data ? $data['total'] : 0;
 }
 
-function getTotalPergantian() {
-    global $conn;
-    $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_perbaikan WHERE status_perbaikan = 'pergantian'");
-    $row = mysqli_fetch_assoc($result);
-    return $row['total'] ?? 0;
+
+if (basename($_SERVER['PHP_SELF']) == 'function_komputer.php') {
+    if (isset($_POST['add'])) {
+        addData($_POST['kategori_kom'], $_POST['dept_kom'], $_POST['nama_assets_kom'], normalizeDate($_POST['tgl_pembelian_kom'] ?? null), $_POST['user_kom'], $_POST['ip_kom'], $_POST['spec_kom'], $_POST['lokasi_kom'], $_POST['qty_kom'], $_POST['desc_kom'] ?? '', $_POST['keterangan_kom'] ?? '');
+        header("location:../data_komputer.php?status=success_add");
+        exit;
+    } elseif (isset($_POST['edit'])) {
+        editData($_POST['kode_assets_kom'], $_POST['nama_assets_kom'], normalizeDate($_POST['tgl_pembelian_kom'] ?? null), $_POST['user_kom'], $_POST['ip_kom'], $_POST['spec_kom'], $_POST['lokasi_kom'], $_POST['qty_kom'], $_POST['desc_kom'] ?? '', $_POST['keterangan_kom'] ?? '');
+        header("location:../edit_komputer.php?kode_assets_kom=".$_POST['kode_assets_kom']."&success=edit");
+        exit;
+    } elseif (isset($_POST['add1'])) {
+        addPerbaikan($_POST['kode_assets_kom'], $_POST['deskripsi_perbaikan'], normalizeDate($_POST['tanggal_perbaikan']), $_POST['status_perbaikan']);
+        header("location:../edit_komputer.php?kode_assets_kom=".$_POST['kode_assets_kom']."&success=add");
+        exit;
+    } elseif (isset($_GET['hapus1'])) {
+        deletePerbaikan($_GET['hapus1']);
+        header("location:../edit_komputer.php?kode_assets_kom=".$_GET['kode_assets_kom']."&success=delete");
+        exit;
+    } elseif (isset($_GET['hapus'])) {
+        deleteData($_GET['hapus']);
+        header("location:../data_komputer.php?status=success_delete");
+        exit;
+    }
 }
