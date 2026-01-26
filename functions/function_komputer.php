@@ -74,7 +74,9 @@ function addPerbaikan($kode_assets_kom, $deskripsi, $tanggal, $status)
             VALUES (?, ?, ?, ?)";
 
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, 'ssss',
+    mysqli_stmt_bind_param(
+        $stmt,
+        'ssss',
         $kode_assets_kom,
         $deskripsi,
         $tanggal,
@@ -87,14 +89,15 @@ function addPerbaikan($kode_assets_kom, $deskripsi, $tanggal, $status)
 function deletePerbaikan($id)
 {
     global $conn;
-    $sql = "DELETE FROM tb_perbaikan WHERE id_perbaikan_kom = ?"; 
+    $sql = "DELETE FROM tb_perbaikan WHERE id_perbaikan_kom = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $id);
     return mysqli_stmt_execute($stmt);
 }
 
 
-function addData($kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom) {
+function addData($kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom)
+{
     global $conn;
     $kode_assets_kom = generateKodeAsset($kategori_kom, $dept_kom);
     $sql = "INSERT INTO tb_komputer 
@@ -103,14 +106,28 @@ function addData($kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom,
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt,'ssssssssisss',
-        $kode_assets_kom, $kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom,
-        $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom
+    mysqli_stmt_bind_param(
+        $stmt,
+        'sssssssssiss',
+        $kode_assets_kom,
+        $kategori_kom,
+        $dept_kom,
+        $nama_assets_kom,
+        $tgl_pembelian_kom,
+        $user_kom,
+        $ip_kom,
+        $spec_kom,
+        $lokasi_kom,  
+        $qty_kom,      
+        $desc_kom,
+        $keterangan_kom
     );
+
     return mysqli_stmt_execute($stmt);
 }
 
-function editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom) {
+function editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom, $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom)
+{
     global $conn;
     $sql = "UPDATE tb_komputer SET
         nama_assets_kom = ?, tgl_pembelian_kom = ?, user_kom = ?, ip_kom = ?, spec_kom = ?,
@@ -118,9 +135,19 @@ function editData($kode_assets_kom, $nama_assets_kom, $tgl_pembelian_kom, $user_
         WHERE kode_assets_kom = ?";
 
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt,'ssssssisss',
-        $nama_assets_kom, $tgl_pembelian_kom, $user_kom, $ip_kom, $spec_kom,
-        $lokasi_kom, $qty_kom, $desc_kom, $keterangan_kom, $kode_assets_kom
+    mysqli_stmt_bind_param(
+        $stmt,
+        'ssssssisss',
+        $nama_assets_kom,
+        $tgl_pembelian_kom,
+        $user_kom,
+        $ip_kom,
+        $spec_kom,
+        $lokasi_kom,
+        $qty_kom,
+        $desc_kom,
+        $keterangan_kom,
+        $kode_assets_kom
     );
     return mysqli_stmt_execute($stmt);
 }
@@ -135,14 +162,16 @@ function deleteData($kode_assets_kom)
 }
 
 
-function getTotalKomputer() {
+function getTotalKomputer()
+{
     global $conn;
     $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_komputer");
     $data = mysqli_fetch_assoc($res);
     return $data ? $data['total'] : 0;
 }
 
-function getTotalPerbaikan() {
+function getTotalPerbaikan()
+{
     global $conn;
     $res = mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_perbaikan");
     $data = mysqli_fetch_assoc($res);
@@ -157,15 +186,15 @@ if (basename($_SERVER['PHP_SELF']) == 'function_komputer.php') {
         exit;
     } elseif (isset($_POST['edit'])) {
         editData($_POST['kode_assets_kom'], $_POST['nama_assets_kom'], normalizeDate($_POST['tgl_pembelian_kom'] ?? null), $_POST['user_kom'], $_POST['ip_kom'], $_POST['spec_kom'], $_POST['lokasi_kom'], $_POST['qty_kom'], $_POST['desc_kom'] ?? '', $_POST['keterangan_kom'] ?? '');
-        header("location:../edit_komputer.php?kode_assets_kom=".$_POST['kode_assets_kom']."&success=edit");
+        header("location:../edit_komputer.php?kode_assets_kom=" . $_POST['kode_assets_kom'] . "&success=edit");
         exit;
     } elseif (isset($_POST['add1'])) {
         addPerbaikan($_POST['kode_assets_kom'], $_POST['deskripsi_perbaikan'], normalizeDate($_POST['tanggal_perbaikan']), $_POST['status_perbaikan']);
-        header("location:../edit_komputer.php?kode_assets_kom=".$_POST['kode_assets_kom']."&success=add");
+        header("location:../edit_komputer.php?kode_assets_kom=" . $_POST['kode_assets_kom'] . "&success=add");
         exit;
     } elseif (isset($_GET['hapus1'])) {
         deletePerbaikan($_GET['hapus1']);
-        header("location:../edit_komputer.php?kode_assets_kom=".$_GET['kode_assets_kom']."&success=delete");
+        header("location:../edit_komputer.php?kode_assets_kom=" . $_GET['kode_assets_kom'] . "&success=delete");
         exit;
     } elseif (isset($_GET['hapus'])) {
         deleteData($_GET['hapus']);

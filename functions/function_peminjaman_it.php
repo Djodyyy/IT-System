@@ -54,26 +54,59 @@ function addPeminjaman($nama, $id_barang, $keterangan) {
     return false;
 }
 
+
 function kembalikanBarang($id) {
     global $conn;
 
-    
     $q = mysqli_query($conn, "SELECT id_barang FROM tb_peminjaman_it WHERE id_peminjaman='$id'");
     $d = mysqli_fetch_assoc($q);
 
     if ($d) {
         $id_barang = $d['id_barang'];
-        
-        
-        $updateStok = mysqli_query($conn, "UPDATE tb_barang_it SET stok = stok + 1 WHERE id_barang='$id_barang'");
-        
-        if ($updateStok) {
-            return mysqli_query($conn, "DELETE FROM tb_peminjaman_it WHERE id_peminjaman='$id'");
-        }
+
+        mysqli_query($conn, "UPDATE tb_barang_it SET stok = stok + 1 WHERE id_barang='$id_barang'");
+
+        return mysqli_query($conn, "
+            UPDATE tb_peminjaman_it
+            SET 
+                status_peminjaman = 'Dikembalikan',
+                tgl_kembali = NOW()
+            WHERE id_peminjaman = '$id'
+        ");
     }
 
     return false;
 }
+
+function getPeminjamanFilter($bulan = null, $dari = null, $sampai = null) {
+    global $conn;
+
+    $where = [];
+
+    if ($bulan) {
+        // format: YYYY-MM
+        $where[] = "DATE_FORMAT(tgl_pinjam, '%Y-%m') = '$bulan'";
+    }
+
+    if ($dari && $sampai) {
+        $where[] = "DATE(tgl_pinjam) BETWEEN '$dari' AND '$sampai'";
+    }
+
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    $sql = "
+        SELECT p.*, b.nama_barang
+        FROM tb_peminjaman_it p
+        JOIN tb_barang_it b ON p.id_barang = b.id_barang
+        $whereSql
+        ORDER BY p.tgl_pinjam DESC
+    ";
+
+    $q = mysqli_query($conn, $sql);
+    if (!$q) return [];
+    return mysqli_fetch_all($q, MYSQLI_ASSOC);
+}
+
 
 function deletePeminjaman($id) {
     global $conn;
@@ -100,9 +133,8 @@ if (basename($_SERVER['PHP_SELF']) == 'function_peminjaman_it.php') {
         exit;
     }
 
-    if (isset($_GET['hapus'])) {
-        $ok = deletePeminjaman($_GET['hapus']);
-        header("Location: ../data_peminjaman_it.php?status=" . ($ok ? "success_delete" : "error"));
-        exit;
+    //if (isset($_GET['hapus'])) {
+        ////$ok = deletePeminjaman($_GET['hapus']);
+       // header("Location: ../data_peminjaman_it.php?status=" . ($ok ? "success_delete" : "error"));
+       /// exit;
     }
-}
