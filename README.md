@@ -1,2 +1,2 @@
 # IT-System
-IT SYSTEM pengelolaan managament asset komputer dan data perihal Teknologi Informasi 
+IT SYSTEM is system inventory control for management computer assets and datas about Information Technology at PT Metro Pearl Indonesia 
