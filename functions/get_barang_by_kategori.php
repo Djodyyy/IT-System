@@ -1,5 +1,8 @@
 <?php
 require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
+requireRole([1, 3], true);               // true = balas JSON, bukan redirect
+
 header('Content-Type: application/json');
 
 $kategori = $_GET['kategori'] ?? '';

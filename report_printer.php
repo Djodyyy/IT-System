@@ -2,7 +2,6 @@
 // 1. Taruh buffer dan session di paling atas untuk cegah error header
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
 }
 
 // 2. Load file fungsi

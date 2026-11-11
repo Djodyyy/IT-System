@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php'; 
 require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
+requireRole([1]);
 require_once __DIR__ . '/function_komputer.php';  
 
 use PhpOffice\PhpSpreadsheet\IOFactory;

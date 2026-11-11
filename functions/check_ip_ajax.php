@@ -1,6 +1,8 @@
 <?php
 require_once 'koneksi.php';
 require_once 'function_ip.php';
+require_once __DIR__ . '/auth.php';
+requireRole([1, 3], true);
 
 header('Content-Type: application/json');
 

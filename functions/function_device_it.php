@@ -1,8 +1,10 @@
 <?php
-require_once __DIR__ . '/koneksi.php';
+require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
+include_once 'helper.php';
 
 /* ==============================
-   NORMALIZE DATE (LOCAL)
+   NORMALIZE DATE
 ================================ */
 function normalizeDate($date)
 {
@@ -11,6 +13,7 @@ function normalizeDate($date)
 
 /* ==============================
    GENERATE KODE DEVICE
+   contoh: LAPTOP-001
 ================================ */
 function generateKodeDevice($kategori)
 {
@@ -28,7 +31,10 @@ function generateKodeDevice($kategori)
     $res  = mysqli_stmt_get_result($stmt);
     $last = mysqli_fetch_assoc($res);
 
-    $num = $last ? ((int) substr($last['kode_device_it'], -3)) + 1 : 1;
+    $num = $last
+        ? ((int) substr($last['kode_device_it'], -3)) + 1
+        : 1;
+
     return strtoupper($kategori) . '-' . str_pad($num, 3, '0', STR_PAD_LEFT);
 }
 
@@ -68,7 +74,7 @@ function addDeviceIT($kategori, $nama, $tgl, $lokasi, $qty, $status, $ket)
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param(
         $stmt,
-        'ssssisss',
+        'sssssiss',
         $kode,
         $kategori,
         $nama,
@@ -129,8 +135,11 @@ function deleteDeviceIT($kode)
    CONTROLLER
 ================================ */
 if (basename($_SERVER['PHP_SELF']) === 'function_device_it.php') {
+     requireRole([1, 3]);
 
-    if (isset($_POST['add'])) {
+    /* === ADD === */
+    if (isset($_POST['tambah'])) {
+
         addDeviceIT(
             $_POST['kategori_device'],
             $_POST['nama_device'],
@@ -145,7 +154,9 @@ if (basename($_SERVER['PHP_SELF']) === 'function_device_it.php') {
         exit;
     }
 
+    /* === EDIT === */
     if (isset($_POST['edit'])) {
+
         editDeviceIT(
             $_POST['kode_device_it'],
             $_POST['nama_device'],
@@ -156,11 +167,13 @@ if (basename($_SERVER['PHP_SELF']) === 'function_device_it.php') {
             $_POST['keterangan'] ?? ''
         );
 
-        header("Location: ../edit_barang_it.php?kode_device_it=" . $_POST['kode_device_it'] . "&success=edit");
+        header("Location: ../data_barang_it.php?status=success_edit");
         exit;
     }
 
+    /* === DELETE === */
     if (isset($_GET['hapus'])) {
+
         deleteDeviceIT($_GET['hapus']);
         header("Location: ../data_barang_it.php?status=success_delete");
         exit;

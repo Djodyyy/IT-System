@@ -1,12 +1,7 @@
 <?php
-session_start();
-// NOT LOGGED IN
-if ($_SESSION['login'] != "yes") {
-    header("location:login.php");
-    exit();
-}
-
-$role = $_SESSION['role'];
+require_once __DIR__ . '/../functions/auth.php';
+enforcePageAccess();              // sudah termasuk requireLogin()
+$role = currentRole();
 $current_page = basename($_SERVER['PHP_SELF']);
 
 // --- LOGIKA REDIRECT OTOMATIS ---
@@ -37,46 +32,47 @@ if ($current_page == "index.php") {
 
 <body class="loading"
     data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false,"leftSidebarCondensed":false,"leftSidebarScrollable":false,"darkMode":false}'>
-<div class="wrapper">
+    <div class="wrapper">
 
-<!-- ================= SIDEBAR ================= -->
-<div class="leftside-menu">
+        <!-- ================= SIDEBAR ================= -->
+        <div class="leftside-menu">
 
-    <a href="index.php" class="logo text-center logo-light">
-        <span class="logo-lg">
-            <img src="assets/images/logo/logo_it.png" height="55">
-        </span>
-        <span class="logo-sm">
-            <img src="assets/images/logo/logo_it.png" height="18">
-        </span>
-    </a>
+            <a href="index.php" class="logo text-center logo-light">
+                <span class="logo-lg">
+                    <img src="assets/images/logo/logo_it.png" height="55">
+                </span>
+                <span class="logo-sm">
+                    <img src="assets/images/logo/logo_it.png" height="18">
+                </span>
+            </a>
 
-    <div class="h-100" id="leftside-menu-container" data-simplebar>
-        <ul class="side-nav">
+            <div class="h-100" id="leftside-menu-container" data-simplebar>
+                <ul class="side-nav">
 
-<?php
-/* ================= ROLE 1 : ADMIN ================= */
-if ($role == 1) {
+                    <?php
+                    /* ================= ROLE 1 : ADMIN ================= */
+                    if ($role == 1) {
 
-echo '<li class="side-nav-title">Navigation</li>';
-echo '
+                        echo '<li class="side-nav-title">Navigation</li>';
+                        echo '
 <li class="side-nav-item">
     <a href="index.php" class="side-nav-link">
         <i class="uil-home-alt"></i> Dashboard
     </a>
 </li>';
 
-echo '<li class="side-nav-title">Master Data</li>';
+                        echo '<li class="side-nav-title">Master Data</li>';
 
-echo '
+                        /* USER */
+                        echo '
 <li class="side-nav-item">
     <a href="data_user.php" class="side-nav-link">
         <i class="uil-user"></i> User
     </a>
 </li>';
 
-/* === DEVICE IT (BARU) === */
-echo '
+                        /* === DEVICE IT === */
+                        echo '
 <li class="side-nav-item">
     <a data-bs-toggle="collapse" href="#sidebarDeviceIT" class="side-nav-link">
         <i class="mdi mdi-laptop"></i>
@@ -91,8 +87,8 @@ echo '
     </div>
 </li>';
 
-/* === KOMPUTER === */
-echo '
+                        /* === KOMPUTER === */
+                        echo '
 <li class="side-nav-item">
     <a data-bs-toggle="collapse" href="#sidebarKomputer" class="side-nav-link">
         <i class="mdi mdi-desktop-tower-monitor"></i>
@@ -108,8 +104,8 @@ echo '
     </div>
 </li>';
 
-/* === PRINTER === */
-echo '
+                        /* === PRINTER === */
+                        echo '
 <li class="side-nav-item">
     <a data-bs-toggle="collapse" href="#sidebarPrinter" class="side-nav-link">
         <i class="mdi mdi-printer"></i>
@@ -126,8 +122,25 @@ echo '
     </div>
 </li>';
 
-/* === PEMINJAMAN IT === */
-echo '
+                        /* === FINGERPRINT (BARU) === */
+                        echo '
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebarFingerprint" class="side-nav-link">
+        <i class="mdi mdi-fingerprint"></i>
+        <span> Fingerprint </span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebarFingerprint">
+        <ul class="side-nav-third-level">
+            <li><a href="data_fingerprint.php">Data Fingerprint</a></li>
+            <li><a href="mapping_fingerprint.php">Mapping Fingerprint</a></li>
+            <li><a href="report_fingerprint.php">Report Fingerprint</a></li>
+        </ul>
+    </div>
+</li>';
+
+                        /* === PEMINJAMAN IT === */
+                        echo '
 <li class="side-nav-item">
     <a data-bs-toggle="collapse" href="#sidebarPeminjamanIT" class="side-nav-link">
         <i class="mdi mdi-clipboard-list-outline"></i>
@@ -142,17 +155,16 @@ echo '
     </div>
 </li>';
 
-echo '
+                        echo '
 <li class="side-nav-item">
     <a href="data_ip.php" class="side-nav-link">
         <i class="mdi mdi-web"></i> IP Address
     </a>
 </li>';
-}
+                    }
 
-/* ================= ROLE 2 : USER (REPORT ONLY) ================= */
-elseif ($role == 2) {
-echo '
+                    /* ================= ROLE 2 : USER ================= */ elseif ($role == 2) {
+                        echo '
 <li class="side-nav-title">Main Menu</li>
 <li class="side-nav-item">
     <a href="report_komputer.php" class="side-nav-link">
@@ -160,14 +172,12 @@ echo '
         Report Komputer
     </a>
 </li>';
-}
+                    }
 
-/* ================= ROLE 3 : PETUGAS PEMINJAMAN ================= */
-elseif ($role == 3) {
-echo '
+                    /* ================= ROLE 3 : PETUGAS ================= */ elseif ($role == 3) {
+                        echo '
 <li class="side-nav-title">Main Menu</li>
 
-/* DEVICE IT */
 <li class="side-nav-item">
     <a href="data_barang_it.php" class="side-nav-link">
         <i class="mdi mdi-laptop"></i> Device IT
@@ -187,13 +197,21 @@ echo '
         </ul>
     </div>
 </li>';
-}
-?>
+                    }
+                    ?>
+                    <li class="side-nav-item mt-3">
+                        <a href="<?= BASE_URL ?>functions/logout.php" class="side-nav-link text-danger">
+                            <i class="mdi mdi-logout"></i>
+                            <span> Logout </span>
+                        </a>
+                    </li>
 
-        </ul>
-    </div>
-</div>
+                </ul>
 
-<!-- ================= CONTENT ================= -->
-<div class="content-page">
-<div class="content">
+                </ul>
+            </div>
+        </div>
+
+        <!-- ================= CONTENT ================= -->
+        <div class="content-page">
+            <div class="content">

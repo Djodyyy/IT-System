@@ -1,5 +1,7 @@
 <?php
 require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
+include_once 'helper.php';
 
 
 function getAllPrinter() {
@@ -94,8 +96,7 @@ function deletePrinter($id_printer) {
 
 
 if (basename($_SERVER['PHP_SELF']) == 'function_printer.php') {
-
-    
+     requireRole([1]);  
     if (isset($_POST['add_jenis'])) {
         $ok = addJenisPrinter($_POST['nama_jenis']);
         header('Location: ../data_printer.php?status=' . ($ok ? 'success_add_jenis' : 'error'));

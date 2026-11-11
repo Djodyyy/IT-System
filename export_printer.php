@@ -1,5 +1,7 @@
 <?php
 require_once 'functions/function_printer.php';
+require_once __DIR__ . '/functions/auth.php';
+requireRole([1]);
 
 // Memberitahu browser bahwa ini adalah file Excel
 header("Content-type: application/vnd-ms-excel");

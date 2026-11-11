@@ -1,5 +1,6 @@
 <?php
 require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
 include_once 'helper.php';
 
 
@@ -117,8 +118,8 @@ function addData($kategori_kom, $dept_kom, $nama_assets_kom, $tgl_pembelian_kom,
         $user_kom,
         $ip_kom,
         $spec_kom,
-        $lokasi_kom,  
-        $qty_kom,      
+        $lokasi_kom,
+        $qty_kom,
         $desc_kom,
         $keterangan_kom
     );
@@ -180,6 +181,7 @@ function getTotalPerbaikan()
 
 
 if (basename($_SERVER['PHP_SELF']) == 'function_komputer.php') {
+    requireRole([1]);
     if (isset($_POST['add'])) {
         addData($_POST['kategori_kom'], $_POST['dept_kom'], $_POST['nama_assets_kom'], normalizeDate($_POST['tgl_pembelian_kom'] ?? null), $_POST['user_kom'], $_POST['ip_kom'], $_POST['spec_kom'], $_POST['lokasi_kom'], $_POST['qty_kom'], $_POST['desc_kom'] ?? '', $_POST['keterangan_kom'] ?? '');
         header("location:../data_komputer.php?status=success_add");

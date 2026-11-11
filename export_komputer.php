@@ -1,5 +1,7 @@
 <?php
 require 'functions/function_komputer.php';
+require_once __DIR__ . '/functions/auth.php';
+requireRole([1, 2]);
 
 // Ambil semua data asli
 $all = getData();

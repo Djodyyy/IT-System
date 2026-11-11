@@ -1,5 +1,8 @@
 <?php
 require_once 'koneksi.php';
+require_once __DIR__ . '/auth.php';
+include_once 'helper.php';
+
 
 if (!$conn) {
     error_log("Koneksi database gagal: " . mysqli_connect_error());
@@ -142,7 +145,7 @@ function deleteIp($id_ip)
 }
 
 if (basename($_SERVER['PHP_SELF']) == 'function_ip.php') {
-    
+    requireRole([1]);
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }

@@ -1,6 +1,7 @@
 <?php
 require_once 'koneksi.php';
-
+require_once __DIR__ . '/auth.php';
+include_once 'helper.php';
 
 
 function getPeminjamanAktif() {
@@ -116,7 +117,8 @@ function deletePeminjaman($id) {
 
 
 if (basename($_SERVER['PHP_SELF']) == 'function_peminjaman_it.php') {
-    
+     requireRole([1, 3]);
+
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }

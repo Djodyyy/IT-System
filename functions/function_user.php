@@ -1,7 +1,8 @@
 <?php
-
-	require_once 'koneksi.php';
-	include_once 'helper.php';
+require_once __DIR__ . '/koneksi.php';
+require_once __DIR__ . '/auth.php';
+requireRole([1]);
+include_once __DIR__ . '/helper.php';
 
 	function getData() {
 		global $conn;
@@ -54,7 +55,6 @@
         $password	    = mysqli_real_escape_string($conn, md5($_POST['password']));
 		$role			= mysqli_real_escape_string($conn, $_POST['role']);
 		$add 		        = addData($nama, $username, $password, $role);
-		session_start();
 		unset ($_SESSION["message"]);
 		if ($add) {			
 			$_SESSION['message'] = $added;
@@ -69,7 +69,6 @@
         $password	    = mysqli_real_escape_string($conn, md5($_POST['password']));
 		$role			= mysqli_real_escape_string($conn, $_POST['role']);
 		$edit 		    = editData($id_user, $nama, $username, $password, $role);
-		session_start();
 		unset ($_SESSION["message"]);
 		if ($edit) {			
 			$_SESSION['message'] = $edited;
@@ -80,7 +79,6 @@
     }elseif (isset($_GET['hapus'])){
 		$id_user	= mysqli_real_escape_string($conn, $_GET['hapus']);
 		$delete = deleteData($id_user);
-		session_start();
 		unset ($_SESSION["message"]);
 		if ($delete) {			
 			$_SESSION['message'] = $deleted;

@@ -16,7 +16,8 @@ $files = [
     'functions/function_ip.php',
     'functions/function_printer.php',
     'functions/function_catrige.php',
-    'functions/function_peminjaman_it.php'
+    'functions/function_peminjaman_it.php', // Tadi kurang koma di sini
+    'functions/function_fingerprint.php'
 ];
 
 foreach ($files as $file) {
@@ -30,6 +31,7 @@ $totalKomputer      = function_exists('getTotalKomputer') ? getTotalKomputer() :
 $totalPerbaikan     = function_exists('getTotalPerbaikan') ? getTotalPerbaikan() : 0;
 $totalIpTerpakai    = function_exists('getTotalIpTerpakai') ? getTotalIpTerpakai() : 0;
 $totalPrinterAktif  = function_exists('getTotalPrinterAktif') ? getTotalPrinterAktif() : 0;
+$totalFingerprint   = function_exists('getTotalFingerprintAktif') ? getTotalFingerprintAktif() : 0;
 
 $dataCatridge       = function_exists('getAllCatrige') ? getAllCatrige() : [];
 $peminjamanAktif    = function_exists('getPeminjamanAktif') ? getPeminjamanAktif() : [];
@@ -78,6 +80,13 @@ $peminjamanAktif    = function_exists('getPeminjamanAktif') ? getPeminjamanAktif
         justify-content: center;
         font-weight: bold;
     }
+    /* Custom grid untuk 5 kolom di layar besar */
+    @media (min-width: 1200px) {
+        .col-xl-custom {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
 </style>
 
 <div class="container-fluid dashboard-container">
@@ -98,7 +107,7 @@ $peminjamanAktif    = function_exists('getPeminjamanAktif') ? getPeminjamanAktif
     </div>
 
     <div class="row">
-        <div class="col-md-6 col-xl-3 mb-4">
+        <div class="col-md-6 col-xl-custom mb-4">
             <a href="data_komputer.php" class="card-link">
                 <div class="card stat-card shadow-sm border-0 border-start border-primary border-4 h-100">
                     <div class="card-body p-4 position-relative">
@@ -110,19 +119,19 @@ $peminjamanAktif    = function_exists('getPeminjamanAktif') ? getPeminjamanAktif
             </a>
         </div>
 
-        <div class="col-md-6 col-xl-3 mb-4">
+        <div class="col-md-6 col-xl-custom mb-4">
             <a href="data_perbaikan.php" class="card-link">
                 <div class="card stat-card shadow-sm border-0 border-start border-warning border-4 h-100">
                     <div class="card-body p-4 position-relative">
                         <h6 class="text-muted text-uppercase fw-semibold mt-0">Perbaikan Komputer</h6>
-                        <h2 class="fw-bold mb-0 text-dark"><?= number_format($totalPerbaikan) ?> <span class="fs-6 fw-normal text-muted">Perbaikan</span></h2>
+                        <h2 class="fw-bold mb-0 text-dark"><?= number_format($totalPerbaikan) ?> <span class="fs-6 fw-normal text-muted">Unit</span></h2>
                         <div class="card-icon text-warning"><i class="mdi mdi-tools"></i></div>
                     </div>
                 </div>
             </a>
         </div>
 
-        <div class="col-md-6 col-xl-3 mb-4">
+        <div class="col-md-6 col-xl-custom mb-4">
             <a href="data_ip.php" class="card-link">
                 <div class="card stat-card shadow-sm border-0 border-start border-info border-4 h-100">
                     <div class="card-body p-4 position-relative">
@@ -134,13 +143,25 @@ $peminjamanAktif    = function_exists('getPeminjamanAktif') ? getPeminjamanAktif
             </a>
         </div>
 
-        <div class="col-md-6 col-xl-3 mb-4">
+        <div class="col-md-6 col-xl-custom mb-4">
             <a href="data_printer.php" class="card-link">
                 <div class="card stat-card shadow-sm border-0 border-start border-success border-4 h-100">
                     <div class="card-body p-4 position-relative">
                         <h6 class="text-muted text-uppercase fw-semibold mt-0">Printer Aktif</h6>
                         <h2 class="fw-bold mb-0 text-dark"><?= number_format($totalPrinterAktif) ?> <span class="fs-6 fw-normal text-muted">Ready</span></h2>
                         <div class="card-icon text-success"><i class="mdi mdi-printer"></i></div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-xl-custom mb-4">
+            <a href="data_fingerprint.php" class="card-link">
+                <div class="card stat-card shadow-sm border-0 border-start border-danger border-4 h-100">
+                    <div class="card-body p-4 position-relative">
+                        <h6 class="text-muted text-uppercase fw-semibold mt-0">Fingerprint</h6>
+                        <h2 class="fw-bold mb-0 text-dark"><?= number_format($totalFingerprint) ?> <span class="fs-6 fw-normal text-muted">Online</span></h2>
+                        <div class="card-icon text-danger"><i class="mdi mdi-fingerprint"></i></div>
                     </div>
                 </div>
             </a>

@@ -1,9 +1,9 @@
 <?php
+require_once __DIR__ . '/koneksi.php';
+require_once __DIR__ . '/auth.php';
+requireRole([1]);
+include_once __DIR__ . '/helper.php';
 
-use LDAP\Result;
-
-require_once 'koneksi.php';
-include_once 'helper.php';
 
 function getData()
 {
@@ -97,7 +97,6 @@ if (isset($_POST['add'])) {
         $_POST['qty_pengambilan']
     );
     $add = addData($id_catrige, $depart, $tanggal_form, $qty_pengambilan);
-    session_start();
     unset($_SESSION['message']);
     if ($add) {
         $_SESSION['message'] = $added;
@@ -121,7 +120,6 @@ if (isset($_POST['add'])) {
         $tanggal_form,
         $qty_pengambilan
     );
-    session_start();
     unset($_SESSION['message']);
     if ($edit) {
         $_SESSION['message'] = $edited;
@@ -132,7 +130,6 @@ if (isset($_POST['add'])) {
 } elseif (isset($_GET['hapus'])) {
     $id_form = mysqli_real_escape_string($conn, $_GET['hapus']);
     $delete = deleteData($id_form);
-    session_start();
     unset($_SESSION['message']);
     if ($delete) {
         $_SESSION['message'] = $deleted;
