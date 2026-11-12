@@ -10,28 +10,40 @@ global $conn;
 */
 $tanggal = $_GET['tanggal'] ?? null;
 
+// Validasi: hanya terima format YYYY-MM-DD yang valid, selain itu dianggap tidak ada filter
+if ($tanggal !== null) {
+    $tglObj = DateTime::createFromFormat('Y-m-d', $tanggal);
+    if (!$tglObj || $tglObj->format('Y-m-d') !== $tanggal) {
+        $tanggal = null;
+    }
+}
+
 if ($tanggal) {
-    $sql = "
+    // Ada input user -> pakai prepared statement
+    $stmt = $conn->prepare("
         SELECT p.*, b.nama_barang
         FROM tb_peminjaman_it p
         JOIN tb_barang_it b ON p.id_barang = b.id_barang
-        WHERE DATE(p.tgl_pinjam) = '$tanggal'
+        WHERE DATE(p.tgl_pinjam) = ?
         ORDER BY p.tgl_pinjam DESC
-    ";
+    ");
+    $stmt->bind_param('s', $tanggal);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
     $judul = "Riwayat Peminjaman Tanggal " . date('d/m/Y', strtotime($tanggal));
 } else {
-    $sql = "
+    // Tanpa input user -> query biasa aman
+    $q = mysqli_query($conn, "
         SELECT p.*, b.nama_barang
         FROM tb_peminjaman_it p
         JOIN tb_barang_it b ON p.id_barang = b.id_barang
         WHERE p.tgl_pinjam >= DATE_SUB(NOW(), INTERVAL 7 DAY)
         ORDER BY p.tgl_pinjam DESC
-    ";
+    ");
+    $data = $q ? mysqli_fetch_all($q, MYSQLI_ASSOC) : [];
     $judul = "Dashboard Report Peminjaman (7 Hari Terakhir)";
 }
-
-$q = mysqli_query($conn, $sql);
-$data = $q ? mysqli_fetch_all($q, MYSQLI_ASSOC) : [];
 
 /*
 |--------------------------------------------------------------------------

@@ -1,22 +1,20 @@
 <?php
-require_once 'koneksi.php';
+require_once __DIR__ . '/koneksi.php';
 require_once __DIR__ . '/auth.php';
-requireRole([1, 3], true);               // true = balas JSON, bukan redirect
-
+requireRole([1, 3], true);
 header('Content-Type: application/json');
 
 $kategori = $_GET['kategori'] ?? '';
 
-$data = [];
-$q = mysqli_query($conn,
+$stmt = $conn->prepare(
     "SELECT id_barang, nama_barang, stok
      FROM tb_barang_it
-     WHERE kategori_barang='$kategori' AND stok > 0
+     WHERE kategori_barang = ? AND stok > 0
      ORDER BY nama_barang ASC"
 );
-
-while ($row = mysqli_fetch_assoc($q)) {
-    $data[] = $row;
-}
+$stmt->bind_param('s', $kategori);
+$stmt->execute();
+$data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 echo json_encode($data);
